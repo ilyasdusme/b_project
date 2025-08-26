@@ -1,0 +1,359 @@
+{% extends "admin/base.html" %}
+
+{% block subtitle %}Dashboard{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    /* Dashboard Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--admin-surface) 0%, var(--admin-bg-secondary) 100%);
+        padding: 40px;
+        border-radius: 20px;
+        margin-bottom: 40px;
+        box-shadow: 0 8px 32px var(--admin-shadow);
+        border: 1px solid var(--admin-border);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--admin-primary), var(--admin-accent), var(--admin-primary));
+    }
+    
+    .dashboard-title {
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .dashboard-subtitle {
+        color: var(--admin-text-secondary);
+        font-size: 18px;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, var(--admin-surface) 0%, var(--admin-bg-secondary) 100%);
+        padding: 32px;
+        border-radius: 20px;
+        border: 1px solid var(--admin-border);
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px var(--admin-shadow);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px var(--admin-shadow-lg);
+    }
+    
+    .stat-card:hover::before {
+        left: 100%;
+    }
+
+    .stat-card i {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block;
+    }
+
+    .stat-card h3 {
+        font-size: 2.8rem;
+        color: var(--admin-text-primary);
+        margin-bottom: 12px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .stat-card p {
+        color: var(--admin-text-secondary);
+        font-size: 16px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .dashboard-section {
+        background: linear-gradient(135deg, var(--admin-surface) 0%, var(--admin-bg-secondary) 100%);
+        padding: 32px;
+        border-radius: 20px;
+        border: 1px solid var(--admin-border);
+        margin-bottom: 40px;
+        box-shadow: 0 4px 20px var(--admin-shadow);
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-section:hover {
+        box-shadow: 0 8px 30px var(--admin-shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .section-title {
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 30px;
+        font-size: 24px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        letter-spacing: -0.01em;
+    }
+    
+    .section-title i {
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 28px;
+    }
+
+    .recent-posts-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .recent-post-item {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--admin-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        position: relative;
+    }
+    
+    .recent-post-item:hover {
+        background: var(--admin-surface-hover);
+        transform: translateX(8px);
+        box-shadow: 0 4px 15px var(--admin-shadow);
+    }
+
+    .recent-post-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .post-info {
+        flex: 1;
+    }
+
+    .post-title {
+        color: var(--admin-text-primary);
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 6px;
+        transition: color 0.3s ease;
+    }
+    
+    .recent-post-item:hover .post-title {
+        color: var(--admin-accent);
+    }
+
+    .post-date {
+        color: var(--admin-text-secondary);
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .post-date::before {
+        content: '\f017';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        color: var(--admin-accent);
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 28px 20px;
+        background: linear-gradient(135deg, var(--admin-bg-tertiary) 0%, var(--admin-surface) 100%);
+        border: 1px solid var(--admin-border);
+        border-radius: 16px;
+        text-decoration: none;
+        color: var(--admin-text-secondary);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 10px var(--admin-shadow);
+    }
+    
+    .quick-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .quick-action:hover {
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+        border-color: var(--admin-primary);
+        color: #fff;
+        transform: translateY(-6px) scale(1.05);
+        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.3);
+    }
+    
+    .quick-action:hover::before {
+        left: 100%;
+    }
+
+    .quick-action i {
+        font-size: 2.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .quick-action:hover i {
+        transform: scale(1.2);
+    }
+    
+    .quick-action span {
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+    
+{% endblock %}
+
+{% block admin_content %}
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">
+            <i class="fas fa-tachometer-alt"></i>
+            Admin Dashboard
+        </h1>
+        <p class="dashboard-subtitle">Blog yönetim paneline hoş geldiniz</p>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <i class="fas fa-file-alt"></i>
+            <h3>{{ stats.total_posts }}</h3>
+            <p>Toplam Yazı</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-eye"></i>
+            <h3>{{ stats.total_views }}</h3>
+            <p>Toplam Görüntüleme</p>
+        </div>
+        
+        <div class="stat-card">
+            <i class="fas fa-user-shield"></i>
+            <h3>{{ session.admin_username }}</h3>
+            <p>Aktif Admin</p>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2 class="section-title">
+            <i class="fas fa-clock"></i>
+            Son Yazılar
+        </h2>
+        <ul class="recent-posts-list">
+            {% for post in stats.recent_posts %}
+            <li class="recent-post-item">
+                <div class="post-info">
+                    <div class="post-title">{{ post.title }}</div>
+                    <div class="post-date">{{ post.created_at[:10] if post.created_at else 'Tarih Yok' }}</div>
+                </div>
+                <a href="{{ url_for('admin_edit_post', post_id=post.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit"></i> Düzenle
+                </a>
+            </li>
+            {% else %}
+            <li class="recent-post-item">
+                <div class="post-info">
+                    <div class="post-title">Henüz yazı yok.</div>
+                    <div class="post-date">İlk yazınızı oluşturun</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="dashboard-section">
+        <h2 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Hızlı İşlemler
+        </h2>
+        <div class="quick-actions">
+            <a href="{{ url_for('admin_new_post') }}" class="quick-action">
+                <i class="fas fa-plus"></i>
+                <span>Yeni Yazı</span>
+            </a>
+            <a href="{{ url_for('admin_favorites_manage') }}" class="quick-action">
+                <i class="fas fa-star"></i>
+                <span>Favoriler</span>
+            </a>
+            
+            <a href="{{ url_for('admin_users') }}" class="quick-action">
+                <i class="fas fa-users"></i>
+                <span>Kullanıcılar</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="quick-action" target="_blank">
+                <i class="fas fa-globe"></i>
+                <span>Siteyi Görüntüle</span>
+            </a>
+        </div>
+    </div>
+{% endblock %}

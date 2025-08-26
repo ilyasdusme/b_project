@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Arama Sonuçları: "{{ query }}" - Dört Sütun Özgürlük{% endblock %}
+
+{% block content %}
+<div class="search-results-page">
+    <div class="search-header">
+        <h1><i class="fas fa-search"></i> Arama Sonuçları</h1>
+        <p class="search-info">
+            <strong>"{{ query }}"</strong> için <strong>{{ posts|length }}</strong> sonuç bulundu
+        </p>
+    </div>
+    
+    {% if posts %}
+        <div class="results-grid">
+            {% for post in posts %}
+                <div class="result-item" onclick="window.open('{{ url_for('post_detail', post_id=post[0]) }}', '_blank')">
+                    <div class="result-content">
+                        <h3 class="result-title">{{ post[1] }}</h3>
+                        <p class="result-excerpt">{{ post[2] }}</p>
+                        <div class="result-meta">
+                            <span class="result-date">
+                                <i class="fas fa-calendar"></i>
+                                {{ post[6][:10] if post[6] else 'Tarih yok' }}
+                            </span>
+                            <span class="result-views">
+                                <i class="fas fa-eye"></i>
+                                {{ post[8] if post[8] else 0 }} görüntüleme
+                            </span>
+                            {% if post[5] %}
+                            <span class="result-category">
+                                <i class="fas fa-tag"></i>
+                                {{ post[5] }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="result-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="search-tips">
+            <h3><i class="fas fa-lightbulb"></i> Arama İpuçları</h3>
+            <ul>
+                <li>Daha spesifik kelimeler kullanarak arama sonuçlarını daraltabilirsiniz</li>
+                <li>Birden fazla kelime arayarak daha geniş sonuçlar elde edebilirsiniz</li>
+                <li>Kategori bazlı aramalar için "finans", "yatırım" gibi anahtar kelimeler kullanın</li>
+            </ul>
+        </div>
+    {% else %}
+        <div class="no-results">
+            <div class="no-results-icon">
+                <i class="fas fa-search-minus"></i>
+            </div>
+            <h3>Sonuç bulunamadı</h3>
+            <p><strong>"{{ query }}"</strong> ile ilgili herhangi bir yazı bulunamadı.</p>
+            
+            <div class="search-suggestions">
+                <h4>Öneriler:</h4>
+                <ul>
+                    <li>Farklı anahtar kelimeler deneyin</li>
+                    <li>Daha genel terimler kullanın</li>
+                    <li>Yazım hatası olmadığından emin olun</li>
+                    <li>Daha kısa kelimeler kullanmayı deneyin</li>
+                </ul>
+            </div>
+            
+            <div class="alternative-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i>
+                    Ana Sayfaya Dön
+                </a>
+                <a href="{{ url_for('favorites') }}" class="btn btn-secondary">
+                    <i class="fas fa-star"></i>
+                    Popüler Yazılar
+                </a>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="new-search">
+        <h3><i class="fas fa-search"></i> Yeni Arama Yap</h3>
+        <form action="{{ url_for('search') }}" method="GET" class="search-form">
+            <div class="search-input-group">
+                <input type="text" name="q" class="search-input" 
+                       placeholder="Aramak istediğiniz konuyu yazın..." 
+                       value="{{ query if query else '' }}">
+                <button type="submit" class="search-submit">
+                    <i class="fas fa-search"></i>
+                    Ara
+                </button>
+            </div>
+        </form>
+        
+        <div class="popular-searches">
+            <h4>Popüler Aramalar:</h4>
+            <div class="search-tags">
+                <a href="{{ url_for('search') }}?q=finans" class="search-tag">finans</a>
+                <a href="{{ url_for('search') }}?q=yatırım" class="search-tag">yatırım</a>
+                <a href="{{ url_for('search') }}?q=özgürlük" class="search-tag">özgürlük</a>
+                <a href="{{ url_for('search') }}?q=para" class="search-tag">para</a>
+                <a href="{{ url_for('search') }}?q=iş" class="search-tag">iş</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.search-results-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.search-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 0;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.search-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.search-info {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.results-grid {
+    margin-bottom: 50px;
+}
+
+.result-item {
+    display: flex;
+    align-items: center;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.result-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.result-content {
+    flex: 1;
+}
+
+.result-title {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.result-excerpt {
+    color: #6c757d;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.result-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: #868e96;
+}
+
+.result-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.result-arrow {
+    flex-shrink: 0;
+    margin-left: 20px;
+    color: #007bff;
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.result-item:hover .result-arrow {
+    transform: translateX(5px);
+}
+
+.search-tips {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    margin-bottom: 40px;
+}
+
+.search-tips h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-tips h3 i {
+    color: #ffc107;
+}
+
+.search-tips ul {
+    color: #6c757d;
+    padding-left: 25px;
+    line-height: 1.8;
+}
+
+.search-tips li {
+    margin-bottom: 8px;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 25px;
+}
+
+.no-results h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.8rem;
+}
+
+.no-results p {
+    color: #6c757d;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.search-suggestions {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto 30px auto;
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+.search-suggestions h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.search-suggestions ul {
+    color: #6c757d;
+    padding-left: 20px;
+}
+
+.search-suggestions li {
+    margin-bottom: 8px;
+}
+
+.alternative-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.new-search {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.new-search h3 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.search-form {
+    margin-bottom: 30px;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.search-submit {
+    padding: 15px 25px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-submit:hover {
+    background: #0056b3;
+}
+
+.popular-searches {
+    text-align: center;
+}
+
+.popular-searches h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.search-tags {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.search-tag {
+    padding: 8px 16px;
+    background: #f8f9fa;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 20px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.search-tag:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+@media (max-width: 768px) {
+    .search-header h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .result-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .result-arrow {
+        margin-left: 0;
+    }
+    
+    .result-meta {
+        justify-content: center;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .alternative-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .search-tags {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+{% endblock %}

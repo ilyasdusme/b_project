@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <form action="{{ url_for('search') }}" method="get" class="home-search-form">
+        
+        </form>
+    </div>
+</div>
+
+<div class="main-content-grid">
+    <div class="articles-container">
+        {% for post in posts %}
+            <a class="article-card" href="{{ url_for('post_detail', post_id=post.id) }}" target="_blank" rel="noopener">
+                {% if post.first_image %}
+                <div class="article-image">
+                    <img src="{{ url_for('static', filename='images/' + post.first_image) }}" alt="{{ post.title }}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                </div>
+                {% elif post.image_filename %}
+                <div class="article-image">
+                    <img src="{{ url_for('static', filename='images/' + post.image_filename) }}" alt="{{ post.title }}" loading="lazy" style="width:100%; height:100%; object-fit:cover;" />
+                </div>
+                {% else %}
+                <div class="article-image {{ post.image_class if post.image_class else 'article-1' }}"></div>
+                {% endif %}
+                <div class="article-content">
+                    <h2 class="article-title">{{ post.title }}</h2>
+                    <p class="article-excerpt">{{ post.excerpt }}</p>
+                    <div class="article-meta">
+                        <span class="article-date">{{ post.created_at[:10] if post.created_at else 'Tarih yok' }}</span>
+                    </div>
+                </div>
+            </a>
+        {% else %}
+            <div class="no-posts">
+                <h1 class="brand-title">YAŞ YİRMİ DÖRT</h1>
+                <p>İlk yazılar yakında eklenecek!</p>
+            </div>
+        {% endfor %}
+        
+        {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('index', page=pagination.prev_page) }}" class="btn btn-secondary">← Önceki</a>
+            {% endif %}
+            
+            <span class="pagination-info">Sayfa {{ pagination.page }} / {{ pagination.total_pages }}</span>
+            
+            {% if pagination.has_next %}
+                <a href="{{ url_for('index', page=pagination.next_page) }}" class="btn btn-secondary">Sonraki →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+   
+</div>
+{% endblock %}

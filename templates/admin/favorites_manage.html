@@ -1,0 +1,580 @@
+{% extends 'admin/base.html' %}
+
+{% block subtitle %}Favorileri Yönet{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-star"></i> Favorileri Yönet</h1>
+    <p class="header-subtitle">Favori içeriklerinizi ekleyin, düzenleyin ve organize edin</p>
+</div>
+
+<div class="manage-favorites-layout">
+    <div class="content-card add-favorite-form">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-plus-circle"></i> Yeni Favori Ekle</h2>
+            <p class="card-subtitle">Yeni bir favori öğesi oluşturun</p>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_add_favorite') }}" enctype="multipart/form-data" class="modern-form">
+                <div class="form-group">
+                    <label for="title"><i class="fas fa-heading"></i> Başlık</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="Örn: Book Recommendations" required>
+                </div>
+                <div class="form-group">
+                    <label for="description"><i class="fas fa-align-left"></i> Açıklama Metni</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" placeholder="Örn: Most personal finance books aren't worth reading. But here are a few that have actually improved my life:"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="images"><i class="fas fa-images"></i> Resimler</label>
+                    <div class="file-upload-area">
+                        <input type="file" id="images" name="images" class="form-control file-input" multiple accept="image/*">
+                        <div class="file-upload-text">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Resimleri sürükleyin veya seçmek için tıklayın</span>
+                        </div>
+                    </div>
+                    <div id="new-images-preview" class="images-preview-grid"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Favori Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="content-card favorites-list">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-star"></i> Mevcut Favoriler</h2>
+            <p class="card-subtitle">{{ favorites|length }} favori bulundu</p>
+        </div>
+        <div class="card-body">
+            <div class="favorites-grid">
+                {% for favorite in favorites %}
+                <div class="favorite-card" id="favorite-card-{{ favorite.id }}">
+                    <div class="card-images-container">
+                        {% if favorite.images %}
+                            {% for image in favorite.images %}
+                            <img src="{{ url_for('static', filename='images/' + image.image_filename) }}" alt="{{ favorite.title }}" class="card-image">
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Resim Yok</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header-inline">
+                            <h3 class="card-title">{{ favorite.title }}</h3>
+                            <span class="badge badge-{{ favorite.category|lower }}">{{ favorite.category }}</span>
+                        </div>
+                        <p class="card-description">{{ favorite.description or 'Açıklama bulunmuyor.' }}</p>
+                        <div class="card-actions">
+                            <a href="{{ url_for('admin_edit_favorite', favorite_id=favorite.id) }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </a>
+                            {% if favorite.link %}
+                            <a href="{{ favorite.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> Ziyaret Et
+                            </a>
+                            {% endif %}
+                            <button type="button" class="btn btn-sm btn-danger btn-delete" data-favorite-id="{{ favorite.id }}">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Henüz favori yok</h3>
+                    <p>İlk favorinizi eklemek için yukarıdaki formu kullanın.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+/* Page Layout */
+.header-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 16px;
+    margin-top: 12px;
+    font-weight: 400;
+}
+
+.manage-favorites-layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Content Cards */
+.content-card {
+    background: var(--admin-surface);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--admin-shadow);
+    border: 1px solid var(--admin-border);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.content-card:hover {
+    box-shadow: 0 8px 30px var(--admin-shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    padding: 24px 30px;
+    border-bottom: 1px solid var(--admin-border);
+    background: linear-gradient(135deg, var(--admin-surface) 0%, var(--admin-bg-secondary) 100%);
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-title i {
+    color: var(--admin-accent);
+}
+
+.card-subtitle {
+    color: var(--admin-text-secondary);
+    font-size: 14px;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+/* Modern Form Styling */
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    font-size: 14px;
+}
+
+.form-group label i {
+    color: var(--admin-accent);
+    width: 16px;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    position: relative;
+    border: 2px dashed var(--admin-border);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--admin-bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: var(--admin-accent);
+    background: var(--admin-surface-hover);
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--admin-text-secondary);
+}
+
+.file-upload-text i {
+    font-size: 32px;
+    color: var(--admin-accent);
+}
+
+/* Images Preview */
+.images-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.images-preview-grid .image-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    aspect-ratio: 1;
+    width: 60px;
+    height: 60px;
+}
+
+.images-preview-grid .image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Form Actions */
+.form-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Favorites Grid */
+.favorites-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    /* allow children to shrink and wrap */
+    min-width: 0;
+}
+
+.favorite-card {
+    display: flex;
+    background: var(--admin-bg-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    min-height: 160px;
+    transition: all 0.3s ease;
+    /* enforce wrapping for any long strings inside the card */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.favorite-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--admin-shadow);
+}
+
+.card-images-container {
+    flex: 0 0 200px;
+    display: flex;
+    background: var(--admin-bg-tertiary);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+}
+
+.no-image-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--admin-text-muted);
+    gap: 8px;
+}
+
+.no-image-placeholder span {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* allow flex child text to shrink/wrap instead of overflowing */
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.card-header-inline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 16px;
+    /* enable wrapping of long headings within flex */
+    min-width: 0;
+}
+
+.card-content .card-title {
+    font-size: 18px;
+    margin: 0;
+    color: var(--admin-text-primary);
+    font-weight: 600;
+    flex: 1;
+    /* wrap very long words/strings */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--admin-accent);
+    color: white;
+    flex-shrink: 0;
+}
+
+.badge-teknoloji { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.badge-eğitim { background: linear-gradient(135deg, #10b981, #047857); }
+.badge-sanat { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.badge-kitaplar { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.badge-araçlar { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.badge-bloglar { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.badge-yatırım { background: linear-gradient(135deg, #84cc16, #65a30d); }
+.badge-genel { background: linear-gradient(135deg, #6b7280, #4b5563); }
+.badge-diğer { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+.card-description {
+    font-size: 14px;
+    color: var(--admin-text-secondary);
+    flex-grow: 1;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    /* wrap very long words/strings */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.card-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.delete-form {
+    display: inline;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--admin-text-secondary);
+}
+
+.empty-icon {
+    font-size: 64px;
+    color: var(--admin-text-muted);
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: var(--admin-text-primary);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: var(--admin-text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .manage-favorites-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .favorite-card {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .card-images-container {
+        flex: none;
+        height: 200px;
+    }
+    
+    .card-header-inline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .card-actions {
+        justify-content: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+// --- FILE UPLOAD SCRIPT ---
+const fileInput = document.getElementById('images');
+const fileUploadArea = document.querySelector('.file-upload-area');
+const newImagesPreview = document.getElementById('new-images-preview');
+const fileUploadText = document.querySelector('.file-upload-text');
+
+function displayPreviews(files) {
+    newImagesPreview.innerHTML = ''; // Clear existing previews
+    if (files && files.length > 0) {
+        fileUploadText.style.display = 'none';
+        Array.from(files).forEach(file => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.className = 'image-item'; // Use existing class
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    imgWrapper.appendChild(img);
+                    newImagesPreview.appendChild(imgWrapper);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    } else {
+        fileUploadText.style.display = 'flex';
+    }
+}
+
+fileInput.addEventListener('change', (e) => {
+    displayPreviews(e.target.files);
+});
+
+fileUploadArea.addEventListener('click', () => fileInput.click());
+
+fileUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.add('dragover');
+});
+
+fileUploadArea.addEventListener('dragleave', () => {
+    fileUploadArea.classList.remove('dragover');
+});
+
+fileUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    fileInput.files = files; // This is the crucial part to assign dropped files
+    displayPreviews(files);
+});
+
+// --- DELETE FAVORITE SCRIPT ---
+function deleteFavorite(favoriteId) {
+    if (confirm('Bu favoriyi çöp kutusuna taşımak istediğinizden emin misiniz? (Daha sonra Çöp Kutusu sayfasından geri yükleyebilirsiniz)')) {
+        fetch(`/admin/favorites/delete/${favoriteId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const cardElement = document.getElementById(`favorite-card-${favoriteId}`);
+                if (cardElement) {
+                    cardElement.remove();
+                    alert('Favori çöp kutusuna taşındı.');
+                } else {
+                    console.error('Kart elementi bulunamadı:', `favorite-card-${favoriteId}`);
+                }
+            } else {
+                alert('İşlem hatası: ' + (data.error || 'Bilinmeyen hata'));
+            }
+        })
+        .catch(error => {
+            console.error('Çöp kutusuna taşıma hatası:', error);
+            alert('Favori çöp kutusuna taşınırken bir hata oluştu: ' + error.message);
+        });
+    }
+}
+
+// Attach click handler without inline JS (delegated)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-delete');
+    if (btn) {
+        const id = btn.getAttribute('data-favorite-id');
+        if (id) {
+            deleteFavorite(Number(id));
+        }
+    }
+});
+
+// --- FORM SUBMISSION SCRIPT ---
+const form = document.querySelector('.modern-form');
+form.addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    if (!title) {
+        e.preventDefault();
+        alert('Lütfen favori başlığını girin.');
+        return;
+    }
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ekleniyor...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

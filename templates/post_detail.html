@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - YAŞ YİRMİ DÖRT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <article class="post-detail">
+        <header class="post-header">
+            <h1 class="post-title">{{ post.title }}</h1>
+            <div class="post-meta">
+                <span class="post-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ post.created_at[:10] if post.created_at else 'Tarih yok' }}
+                </span>
+                {% if post.category %}
+                <span class="post-category">
+                    <i class="fas fa-tag"></i>
+                    {{ post.category }}
+                </span>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if images %}
+        <div class="post-images-container">
+            {% for image in images %}
+            <div class="post-image-container">
+                <img src="{{ url_for('static', filename='images/' + image.image_filename) }}" alt="{{ post.title }}" class="post-image-detail" loading="lazy">
+            </div>
+            {% endfor %}
+        </div>
+        {% elif post.image_filename %}
+        <div class="post-image-container">
+            <img src="{{ url_for('static', filename='images/' + post.image_filename) }}" alt="{{ post.title }}" class="post-image-detail" loading="lazy">
+        </div>
+        {% endif %}
+
+        <div class="post-content-container">
+            <div class="post-excerpt">
+                <p><strong>{{ post.excerpt }}</strong></p>
+            </div>
+
+            <div class="post-content">
+                {{ post.content|safe }}
+            </div>
+        </div>
+
+        <div class="post-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary" id="backButton">
+                <i class="fas fa-arrow-left"></i>
+                Geri Dön
+            </a>
+            <button onclick="sharePost()" class="btn btn-primary">
+                <i class="fas fa-share"></i>
+                Paylaş
+            </button>
+        </div>
+    </article>
+</div>
+
+<script>
+// Back button: prefer history.back() if available, otherwise fallback to homepage link
+document.addEventListener('DOMContentLoaded', function() {
+    var backBtn = document.getElementById('backButton');
+    if (!backBtn) return;
+    backBtn.addEventListener('click', function(e) {
+        try {
+            var hasHistory = window.history && window.history.length > 1;
+            var hasSameOriginRef = document.referrer && (new URL(document.referrer)).origin === window.location.origin;
+            if (hasHistory && hasSameOriginRef) {
+                e.preventDefault();
+                window.history.back();
+            }
+            // else: allow default navigation to homepage
+        } catch (err) {
+            // On any error, allow default navigation
+        }
+    });
+});
+
+function sharePost() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ post.title }}',
+            text: '{{ post.excerpt }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link kopyalandı!');
+        });
+    }
+}
+</script>
+{% endblock %}

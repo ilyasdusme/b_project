@@ -1,0 +1,120 @@
+{% extends 'admin/base.html' %}
+
+{% block subtitle %}Yazı Yönetimi{% endblock %}
+
+{% block admin_content %}
+<div class="header">
+    <h1 class="header-title">Yazı Yönetimi</h1>
+    <a href="{{ url_for('admin_new_post') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Yeni Yazı Ekle
+    </a>
+</div>
+
+<div class="content-block">
+    <ul class="posts-list">
+        {% for post in posts %}
+        <li class="post-item">
+            <div class="post-info">
+                <h3 class="post-title">{{ post['title'] }}</h3>
+                <div class="post-meta">
+                    <span>Oluşturulma: {{ post['created_at'][:10] if post['created_at'] else 'Tarih Yok' }}</span>
+                    <span><i class="fas fa-eye"></i> {{ post['views'] if post['views'] else 0 }}</span>
+                </div>
+            </div>
+            <div class="post-actions">
+                <a href="{{ url_for('admin_edit_post', post_id=post['id']) }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-edit"></i> Düzenle
+                </a>
+                <form action="{{ url_for('admin_delete_post', post_id=post['id']) }}" method="POST" onsubmit="return confirm('Bu yazıyı silmek istediğinizden emin misiniz?');" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                </form>
+            </div>
+        </li>
+        {% else %}
+        <div class="no-content">
+            <h3>Henüz hiç yazı oluşturulmamış.</h3>
+            <p>Başlamak için yukarıdaki "Yeni Yazı Ekle" butonunu kullanabilirsiniz.</p>
+        </div>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+.posts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.post-item {
+    background-color: var(--card-bg-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.post-item:hover {
+    background-color: var(--hover-color);
+    transform: translateY(-2px);
+}
+
+.post-info {
+    flex-grow: 1;
+}
+
+.post-title {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.post-meta {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    display: flex;
+    gap: 20px;
+}
+
+.post-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.post-actions .btn {
+    padding: 8px 15px;
+}
+
+.no-content {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.no-content h3 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.no-content p {
+    color: var(--text-secondary-color);
+}
+</style>
+{% endblock %}

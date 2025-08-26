@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Favoriler - YAŞ YİRMİ DÖRT{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  
+
+    <div class="page-content">
+        {% if favorites %}
+            <div class="favorites-grid">
+                {% for favorite in favorites %}
+                <div class="favorite-section">
+                    <h2 class="section-title">{{ favorite.title }}</h2>
+                    {% if favorite.description %}
+                        <p class="section-description">{{ favorite.description }}</p>
+                    {% endif %}
+                    
+                    {% if favorite.images and favorite.images|length > 0 %}
+                        <div class="books-grid">
+                            {% for image in favorite.images %}
+                                <div class="book-item">
+                                    <img src="{{ url_for('static', filename='images/' + image.image_filename) }}" alt="Book cover" class="book-cover">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-content-block">
+                <div class="no-content-icon">⭐</div>
+                <h2>Henüz favori eklenmemiş</h2>
+                <p>Yakında en beğendiğim içerikleri burada paylaşacağım.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.favorites-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    margin-top: 32px;
+}
+
+.favorite-section {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+}
+
+.section-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.section-description {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    justify-items: center;
+}
+
+.book-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.book-cover {
+    max-width: 200px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.book-cover:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+    .favorite-section {
+        padding: 24px;
+    }
+    
+    .section-title {
+        font-size: 24px;
+    }
+    
+    .section-description {
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .books-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+    }
+    
+    .book-cover {
+        max-width: 150px;
+        max-height: 225px;
+    }
+}
+</style>
+{% endblock %}

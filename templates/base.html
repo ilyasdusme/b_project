@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YAŞ YİRMİ DÖRT{% endblock %}</title>
+    <meta name="description" content="Finansal özgürlük ve Kendi yolculuğumu paylaşıyorum">
+    <meta name="keywords" content="finans, yatırım, para, YAŞ YİRMİ DÖRT, blog, zenginlik">
+    <meta name="author" content="Zach">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ range(1000, 9999) | random }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+    <header class="header">
+        <div class="container">
+            <h1 class="site-title">
+                <a href="{{ url_for('index') }}" style="text-decoration: none; color: inherit;">
+                    {% block site_title %}YAŞ YİRMİ DÖRT{% endblock %}
+                </a>
+                <span class="brand-bird" aria-hidden="true"></span>
+            </h1>
+            <p class="site-description">{% block site_description %}Kendi yolculuğumu paylaşıyorum{% endblock %}</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="container">
+            <div class="nav-container">
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('about') }}" {% if request.endpoint == 'about' %}class="active"{% endif %}>HAKKINDA</a></li>
+                    <li><a href="{{ url_for('favorites') }}" {% if request.endpoint == 'favorites' %}class="active"{% endif %}>FAVORİLER</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                        <button onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="main-content">
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+
+        <aside class="sidebar">
+            <div class="search-section">
+                <h3 class="search-title">Bu Siteyi Ara</h3>
+                <div class="search-container">
+                    <form action="{{ url_for('search') }}" method="GET">
+                        <input type="text" name="q" class="search-input" placeholder="Aramak istediğiniz konuyu yazın..." 
+                               value="{{ request.args.get('q', '') }}">
+                        <button type="submit" class="search-btn">🔍</button>
+                    </form>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+
+            <div class="about-section" id="about">
+                <h3 class="about-title">Hakkında</h3>
+                <p class="about-text">
+                    Benim adım İlyas. Burada aylık planlarımı, hedeflerimi ve düşüncelerimi paylaşıyorum. Yolculuğum boyunca öğrendiklerimi ve deneyimlerimi takip ederek ilham alabilir, kendi hedeflerin için fikir edinebilirsin.
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div>© YAŞ YİRMİ DÖRT — Tüm hakları saklıdır.</div>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}
+    <script src="{{ url_for('static', filename='js/script.js') }}?v={{ range(1000, 9999) | random }}"></script>
+    {% endblock %}
+    {% endblock %}
+</body>
+</html>

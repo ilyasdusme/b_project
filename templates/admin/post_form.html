@@ -1,0 +1,573 @@
+{% extends 'admin/base.html' %}
+
+{% block subtitle %}{% if post %}Yazı Düzenle{% else %}Yeni Yazı{% endif %}{% endblock %}
+
+{% block admin_extra_css %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #343a40;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .admin-header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .main-content {
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .content-textarea {
+            min-height: 400px;
+        }
+
+        .image-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-upload:hover {
+            border-color: #007bff;
+        }
+
+        .image-upload input[type="file"] {
+            display: none;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #868e96;
+            font-size: 0.9rem;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .flash-message {
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .char-count {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .admin-nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <header class="admin-header">
+        <h1>
+            <i class="fas fa-{% if post %}edit{% else %}plus{% endif %}"></i>
+            {% if post %}Yazı Düzenle{% else %}Yeni Yazı Ekle{% endif %}
+        </h1>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin_posts') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Yazılara Dön
+            </a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                        <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('admin_save_post') }}" enctype="multipart/form-data" id="postForm">
+                {% if post %}
+                    <input type="hidden" name="post_id" value="{{ post[0] }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="title">Yazı Başlığı *</label>
+                    <input type="text" id="title" name="title" required 
+                           value="{{ post[1] if post else '' }}"
+                           placeholder="Yazınızın başlığını girin...">
+                </div>
+
+                <div class="form-group">
+                    <label for="excerpt">Özet *</label>
+                    <textarea id="excerpt" name="excerpt" required 
+                              placeholder="Yazınızın kısa özetini girin... (Bu metin ana sayfada görünecek)">{{ post[2] if post else '' }}</textarea>
+                    <div class="char-count" id="excerptCount">0 karakter</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">İçerik *</label>
+                    <textarea id="content" name="content" class="content-textarea" required 
+                              placeholder="Yazınızın tam içeriğini girin... HTML etiketleri kullanabilirsiniz.">{{ post[3] if post else '' }}</textarea>
+                    <div class="char-count" id="contentCount">0 karakter</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <select id="category" name="category">
+                        <option value="">Kategori Seçin</option>
+                        <option value="article-1" {% if post and post[5] == 'article-1' %}selected{% endif %}>Finans</option>
+                        <option value="article-2" {% if post and post[5] == 'article-2' %}selected{% endif %}>Yatırım</option>
+                        <option value="article-3" {% if post and post[5] == 'article-3' %}selected{% endif %}>Kişisel Gelişim</option>
+                        <option value="article-4" {% if post and post[5] == 'article-4' %}selected{% endif %}>Teknoloji</option>
+                        <option value="article-5" {% if post and post[5] == 'article-5' %}selected{% endif %}>Yaşam</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Yazı Görselleri</label>
+                    <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                        <input type="file" id="imageInput" name="images" accept="image/*" multiple onchange="previewImages(this)">
+                        <div class="upload-text">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #007bff; margin-bottom: 10px;"></i>
+                            <div>Görseller yüklemek için tıklayın</div>
+                        </div>
+                        <div class="upload-hint">Birden fazla görsel seçebilirsiniz - PNG, JPG, GIF dosyaları desteklenir (Max: 16MB)</div>
+                    </div>
+                    <div class="images-preview" id="imagesPreview" style="display: none;">
+                        <div id="previewContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;"></div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button type="button" onclick="removeAllImages()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-trash"></i> Tüm Görselleri Kaldır
+                            </button>
+                        </div>
+                    </div>
+                    {% if post %}
+                    <div class="current-images" id="currentImages">
+                        <p style="margin: 15px 0 10px 0; color: #6c757d;"><strong>Mevcut Görseller:</strong></p>
+                        <div id="existingImagesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('admin_posts') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        İptal
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        {% if post %}Değişiklikleri Kaydet{% else %}Yazıyı Yayınla{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block admin_extra_js %}
+    <script>
+        window.postImagesData = {{ images | tojson | safe if images else '[]' }};
+    </script>
+    <script>
+        // Karakter sayacı
+        function updateCharCount(elementId, countId) {
+            const element = document.getElementById(elementId);
+            const counter = document.getElementById(countId);
+            const count = element.value.length;
+            counter.textContent = count.toLocaleString() + ' karakter';
+        }
+
+        // Sayaçları başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            const excerptTextarea = document.getElementById('excerpt');
+            const contentTextarea = document.getElementById('content');
+            
+            excerptTextarea.addEventListener('input', function() {
+                updateCharCount('excerpt', 'excerptCount');
+            });
+            
+            contentTextarea.addEventListener('input', function() {
+                updateCharCount('content', 'contentCount');
+            });
+            
+            // İlk yüklemede sayaçları güncelle
+            updateCharCount('excerpt', 'excerptCount');
+            updateCharCount('content', 'contentCount');
+            
+            // Mevcut görselleri yükle
+            loadExistingImages();
+        });
+
+        // Mevcut görselleri yükle
+        function loadExistingImages() {
+            const existingContainer = document.getElementById('existingImagesContainer');
+            if (!existingContainer) return;
+            
+            // Get images data from hidden input or data attribute
+            const imagesData = window.postImagesData || [];
+            
+            imagesData.forEach((image, index) => {
+                const imageCard = document.createElement('div');
+                imageCard.style.cssText = `
+                    border: 1px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 10px;
+                    text-align: center;
+                    background: white;
+                `;
+                
+                imageCard.innerHTML = `
+                    <img src="/static/images/${image.image_filename}" alt="Mevcut görsel ${index + 1}" 
+                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                    <div style="font-size: 0.9rem; color: #6c757d;">${image.image_filename}</div>
+                    <button type="button" onclick="deleteExistingImage(${image.id}, this)" 
+                            style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.8rem;">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                `;
+                
+                existingContainer.appendChild(imageCard);
+            });
+        }
+
+        // Mevcut görseli sil
+        function deleteExistingImage(imageId, button) {
+            if (confirm('Bu görseli silmek istediğinizden emin misiniz?')) {
+                fetch(`/admin/posts/images/delete/${imageId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        button.parentElement.remove();
+                    } else {
+                        alert('Görsel silinemedi!');
+                    }
+                }).catch(() => {
+                    alert('Bir hata oluştu!');
+                });
+            }
+        }
+
+        // Çoklu görsel önizleme
+        function previewImages(input) {
+            const previewContainer = document.getElementById('previewContainer');
+            const imagesPreview = document.getElementById('imagesPreview');
+            
+            if (input.files && input.files.length > 0) {
+                previewContainer.innerHTML = '';
+                
+                Array.from(input.files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const imageCard = document.createElement('div');
+                            imageCard.style.cssText = `
+                                border: 1px solid #e9ecef;
+                                border-radius: 8px;
+                                padding: 10px;
+                                text-align: center;
+                                background: white;
+                            `;
+                            
+                            imageCard.innerHTML = `
+                                <img src="${e.target.result}" alt="Önizleme ${index + 1}" 
+                                     style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                                <div style="font-size: 0.9rem; color: #6c757d; word-break: break-all;">${file.name}</div>
+                                <button type="button" onclick="removeImagePreview(this, ${index})" 
+                                        style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.8rem;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            
+                            previewContainer.appendChild(imageCard);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                imagesPreview.style.display = 'block';
+                
+                // Mevcut görseller varsa gizle
+                const currentImages = document.getElementById('currentImages');
+                if (currentImages) {
+                    currentImages.style.display = 'none';
+                }
+            }
+        }
+
+        // Tek görsel önizlemesini kaldır
+        function removeImagePreview(button, index) {
+            const input = document.getElementById('imageInput');
+            const dt = new DataTransfer();
+            
+            Array.from(input.files).forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+            
+            input.files = dt.files;
+            previewImages(input);
+        }
+
+        // Tüm görselleri kaldır
+        function removeAllImages() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagesPreview').style.display = 'none';
+            
+            // Mevcut görseller varsa tekrar göster
+            const currentImages = document.getElementById('currentImages');
+            if (currentImages) {
+                currentImages.style.display = 'block';
+            }
+        }
+
+        // Form validasyonu
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            const title = document.getElementById('title').value.trim();
+            const excerpt = document.getElementById('excerpt').value.trim();
+            const content = document.getElementById('content').value.trim();
+            
+            if (!title || !excerpt || !content) {
+                e.preventDefault();
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return false;
+            }
+            
+            if (title.length < 5) {
+                e.preventDefault();
+                alert('Başlık en az 5 karakter olmalıdır!');
+                return false;
+            }
+            
+            if (excerpt.length < 20) {
+                e.preventDefault();
+                alert('Özet en az 20 karakter olmalıdır!');
+                return false;
+            }
+            
+            if (content.length < 50) {
+                e.preventDefault();
+                alert('İçerik en az 50 karakter olmalıdır!');
+                return false;
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S ile kaydet
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('postForm').submit();
+            }
+            
+            // Ctrl+B ile kalın yazı (content alanında)
+            if (e.ctrlKey && e.key === 'b' && e.target.id === 'content') {
+                e.preventDefault();
+                insertTextAtCursor(e.target, '<strong>', '</strong>');
+            }
+            
+            // Ctrl+I ile italik yazı (content alanında)
+            if (e.ctrlKey && e.key === 'i' && e.target.id === 'content') {
+                e.preventDefault();
+                insertTextAtCursor(e.target, '<em>', '</em>');
+            }
+        });
+
+        // Metin ekleme fonksiyonu
+        function insertTextAtCursor(textarea, startTag, endTag) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const beforeText = textarea.value.substring(0, start);
+            const afterText = textarea.value.substring(end);
+            
+            textarea.value = beforeText + startTag + selectedText + endTag + afterText;
+            textarea.focus();
+            textarea.setSelectionRange(start + startTag.length, start + startTag.length + selectedText.length);
+        }
+    </script>
+{% endblock %}

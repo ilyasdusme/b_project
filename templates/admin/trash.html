@@ -1,0 +1,232 @@
+{% extends 'admin/base.html' %}
+
+{% block subtitle %}Çöp Kutusu{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+    <h1><i class="fas fa-trash-alt"></i> Çöp Kutusu</h1>
+    <p class="header-subtitle">Silinen (yumuşak silme) içerikleri yönetin. Geri yükleyebilir veya kalıcı olarak silebilirsiniz.</p>
+</div>
+
+<div class="trash-layout">
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-file-alt"></i> Yazılar</h2>
+            <p class="card-subtitle">{{ trashed_posts|length }} öğe</p>
+        </div>
+        <div class="card-body">
+            {% if trashed_posts %}
+            <table class="trash-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Başlık</th>
+                        <th>Silinme</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in trashed_posts %}
+                    <tr id="trash-post-{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.deleted_at or '-' }}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="restoreItem('post', {{ item.id }})"><i class="fas fa-undo"></i> Geri Yükle</button>
+                            <button class="btn btn-sm btn-danger" onclick="hardDelete('post', {{ item.id }})"><i class="fas fa-times"></i> Kalıcı Sil</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-file-alt"></i></div>
+                <p>Çöp kutusunda yazı bulunmuyor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-star"></i> Favoriler</h2>
+            <p class="card-subtitle">{{ trashed_favorites|length }} öğe</p>
+        </div>
+        <div class="card-body">
+            {% if trashed_favorites %}
+            <table class="trash-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Başlık</th>
+                        <th>Silinme</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in trashed_favorites %}
+                    <tr id="trash-favorite-{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.deleted_at or '-' }}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="restoreItem('favorite', {{ item.id }})"><i class="fas fa-undo"></i> Geri Yükle</button>
+                            <button class="btn btn-sm btn-danger" onclick="hardDelete('favorite', {{ item.id }})"><i class="fas fa-times"></i> Kalıcı Sil</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-star"></i></div>
+                <p>Çöp kutusunda favori bulunmuyor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-images"></i> Favori Resimleri</h2>
+            <p class="card-subtitle">{{ trashed_fav_images|length }} öğe</p>
+        </div>
+        <div class="card-body">
+            {% if trashed_fav_images %}
+            <table class="trash-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Dosya</th>
+                        <th>Silinme</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in trashed_fav_images %}
+                    <tr id="trash-favorite_image-{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.image_filename }}</td>
+                        <td>{{ item.deleted_at or '-' }}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="restoreItem('favorite_image', {{ item.id }})"><i class="fas fa-undo"></i> Geri Yükle</button>
+                            <button class="btn btn-sm btn-danger" onclick="hardDelete('favorite_image', {{ item.id }})"><i class="fas fa-times"></i> Kalıcı Sil</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-images"></i></div>
+                <p>Çöp kutusunda favori resmi bulunmuyor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-images"></i> Yazı Resimleri</h2>
+            <p class="card-subtitle">{{ trashed_post_images|length }} öğe</p>
+        </div>
+        <div class="card-body">
+            {% if trashed_post_images %}
+            <table class="trash-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Dosya</th>
+                        <th>Silinme</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in trashed_post_images %}
+                    <tr id="trash-post_image-{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.image_filename }}</td>
+                        <td>{{ item.deleted_at or '-' }}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="restoreItem('post_image', {{ item.id }})"><i class="fas fa-undo"></i> Geri Yükle</button>
+                            <button class="btn btn-sm btn-danger" onclick="hardDelete('post_image', {{ item.id }})"><i class="fas fa-times"></i> Kalıcı Sil</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-images"></i></div>
+                <p>Çöp kutusunda yazı resmi bulunmuyor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    
+</div>
+{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+.trash-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+.trash-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.trash-table th, .trash-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-text-primary);
+}
+.trash-table th {
+    text-align: left;
+    color: var(--admin-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+.actions { display: flex; gap: 8px; }
+</style>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+function restoreItem(type, id) {
+    fetch(`/admin/trash/restore/${type}/${id}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.getElementById(`trash-${type}-${id}`);
+                if (row) row.remove();
+                alert('Öğe geri yüklendi.');
+            } else {
+                alert('Geri yükleme hatası: ' + (data.error || 'Bilinmeyen hata'));
+            }
+        })
+        .catch(err => alert('Geri yükleme hatası: ' + err.message));
+}
+
+function hardDelete(type, id) {
+    if (!confirm('Bu öğeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
+    fetch(`/admin/trash/hard_delete/${type}/${id}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.getElementById(`trash-${type}-${id}`);
+                if (row) row.remove();
+                alert('Öğe kalıcı olarak silindi.');
+            } else {
+                alert('Silme hatası: ' + (data.error || 'Bilinmeyen hata'));
+            }
+        })
+        .catch(err => alert('Silme hatası: ' + err.message));
+}
+</script>
+{% endblock %}
